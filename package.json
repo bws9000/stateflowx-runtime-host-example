@@ -1,0 +1,17 @@
+{
+  "name": "runtime-host",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@stateflowx/runtime": "^0.1.6",
+    "ws": "^8.20.1"
+  }
+}
