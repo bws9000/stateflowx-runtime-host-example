@@ -7,12 +7,12 @@ This project demonstrates how to host the StateFlowX runtime outside of the main
 ## Features
 
 - External npm package consumption
-- WebSocket runtime hosting
-- JSON-RPC transport
+- HTTP JSON-RPC runtime hosting
 - Dynamic runtime initialization
 - Gemini AI provider integration
 - Remote workflow registration
 - HTTP service orchestration
+- Runtime bootstrap API
 
 ---
 
@@ -43,7 +43,7 @@ node main.mjs
 Runtime will start on:
 
 ```text
-ws://localhost:3000
+http://localhost:3000/rpc
 ```
 
 ---
@@ -53,55 +53,28 @@ ws://localhost:3000
 ```js
 import 'dotenv/config';
 
-import { WebSocketServer } from 'ws';
-
 import {
-  createRuntime,
+  bootstrapHttpRuntime,
   RuntimeInitializeApp,
   GeminiProvider,
 } from '@stateflowx/runtime';
 
-const wss = new WebSocketServer({
-  port: 3000,
-});
+await bootstrapHttpRuntime({
+  apps: [
+    new RuntimeInitializeApp(),
+  ],
 
-wss.on('connection', (socket) => {
-  console.log('Client connected');
-
-  const runtime = createRuntime(
+  providers: [
     {
-      send(data) {
-        socket.send(data);
-      },
+      name: 'gemini',
+
+      provider:
+        new GeminiProvider(),
     },
-    {
-      apps: [
-        new RuntimeInitializeApp(),
-      ],
+  ],
 
-      providers: [
-        {
-          name: 'default',
-          provider: new GeminiProvider(),
-        },
-      ],
-
-      services: [],
-    }
-  );
-
-  socket.on('message', async (message) => {
-    const payload = JSON.parse(message.toString());
-
-    console.log('MESSAGE:', payload);
-
-    await runtime.receiveAndSend(payload);
-  });
+  services: [],
 });
-
-console.log(
-  'StateFlowX runtime listening on ws://localhost:3000'
-);
 ```
 
 ---
@@ -117,11 +90,13 @@ console.log(
 ## Architecture
 
 ```text
-Angular Client
+Client
   ->
-WebSocket
+HTTP
   ->
-JSON-RPC Runtime
+JSON-RPC
+  ->
+StateFlowX Runtime
   ->
 Dynamic Workflow Registration
   ->
