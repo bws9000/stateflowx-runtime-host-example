@@ -16,7 +16,7 @@ import { WebSocketServer } from 'ws';
 // WebSocket runtime server
 //
 const server = new WebSocketServer({
-  port: 3000,
+  port: 3001,
 });
 
 //
@@ -90,5 +90,5 @@ bootstrapRuntime(
 );
 
 console.log(
-  'StateFlowX runtime listening on ws://localhost:3000'
+  'StateFlowX runtime listening on ws://localhost:3001'
 );

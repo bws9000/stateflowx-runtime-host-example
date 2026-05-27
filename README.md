@@ -7,12 +7,13 @@ This project demonstrates how to host the StateFlowX runtime outside of the main
 ## Features
 
 - External npm package consumption
-- HTTP JSON-RPC runtime hosting
-- Dynamic runtime initialization
+- WebSocket runtime hosting
+- JSON-RPC protocol transport
+- Realtime runtime event streaming
 - Gemini AI provider integration
-- Remote workflow registration
-- HTTP service orchestration
+- Dynamic runtime initialization
 - Runtime bootstrap API
+- Event-driven orchestration
 
 ---
 
@@ -43,7 +44,7 @@ node main.mjs
 Runtime will start on:
 
 ```text
-http://localhost:3000/rpc
+ws://localhost:3001
 ```
 
 ---
@@ -92,19 +93,17 @@ await bootstrapHttpRuntime({
 ```text
 Client
   ->
-HTTP
+WebSocket
   ->
 JSON-RPC
   ->
 StateFlowX Runtime
   ->
-Dynamic Workflow Registration
+Providers
   ->
-HTTP Services
+Runtime Events
   ->
-Gemini Provider
-  ->
-Structured AI Response
+Artifact Generation
 ```
 
 ---
