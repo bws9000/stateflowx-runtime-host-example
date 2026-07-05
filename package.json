@@ -11,7 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@stateflowx/runtime": "^0.4.15",
+    "@stateflowx/runtime": "^0.4.21",
     "ws": "^8.20.1"
   }
 }

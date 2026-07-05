@@ -1,11 +1,9 @@
 import 'dotenv/config';
 
 import {
-  bootstrapRuntime,
-  createRuntime,
+  bootstrapHttpRuntime,
   RuntimeInitializeApp,
   GeminiProvider,
-  JsonRpcProtocol,
   WebSocketTransport,
   WebSocketEventDispatcher,
 } from '@stateflowx/runtime';
@@ -13,35 +11,17 @@ import {
 import { WebSocketServer } from 'ws';
 
 //
-// WebSocket runtime server
+// HTTP runtime
 //
-const server = new WebSocketServer({
-  port: 3001,
-});
-
-//
-// Transport + protocol
-//
-const transport =
-  new WebSocketTransport(server);
-
-const protocol =
-  new JsonRpcProtocol();
-
-//
-// Runtime
-//
-const runtime = createRuntime({
-  transport,
-
-  protocol,
+const {
+  runtime,
+} = await bootstrapHttpRuntime({
 
   providers: [
     {
       name: 'gemini',
 
-      provider:
-        new GeminiProvider(),
+      provider: new GeminiProvider(),
     },
   ],
 
@@ -58,37 +38,55 @@ const runtime = createRuntime({
       enabled: false,
     },
   },
+
+  apps: [
+    new RuntimeInitializeApp(),
+  ],
+});
+
+//
+// WebSocket transport
+//
+const server = new WebSocketServer({
+  port: 3001,
+});
+
+const websocket =
+  new WebSocketTransport(server);
+
+//
+// Register WebSocket transport
+//
+runtime.transports.push(websocket);
+
+websocket.onMessage(async (clientId, payload) => {
+
+  const response =
+    await runtime.protocol.receive(payload);
+
+  if (response !== undefined) {
+    await websocket.send(clientId, response);
+  }
+
+  return response;
 });
 
 //
 // Runtime event dispatcher
 //
-const dispatcher =
-  new WebSocketEventDispatcher(
-    server
-  );
-
-runtime.events.on(
-  '*',
-
-  async (event) => {
-    await dispatcher.dispatch(
-      event
-    );
-  }
+runtime.addEventDispatcher(
+  new WebSocketEventDispatcher(server)
 );
 
-//
-// Register runtime apps/workflows
-//
-bootstrapRuntime(
-  [
-    new RuntimeInitializeApp(),
-  ],
+console.log(`
+StateFlowX runtime started
 
-  runtime
-);
+HTTP JSON-RPC
+  http://localhost:3000/rpc
 
-console.log(
-  'StateFlowX runtime listening on ws://localhost:3001'
-);
+WebSocket JSON-RPC
+  ws://localhost:3001
+
+WebSocket clients support realtime runtime events.
+HTTP clients support request/response execution.
+`);
