@@ -31,6 +31,8 @@ Create a `.env` file:
 
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key
+OPENAI_API_KEY=your openai key
+
 ```
 
 ---
