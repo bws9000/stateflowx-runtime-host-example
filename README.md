@@ -1,19 +1,22 @@
 # StateFlowX Runtime Host Demo
 
-Minimal external runtime host example for StateFlowX.
+Minimal standalone runtime host for StateFlowX.
 
-This project demonstrates how to host the StateFlowX runtime outside of the main monorepo using the published npm packages.
+This project demonstrates how to host the StateFlowX Runtime outside of the main monorepo using the published npm packages.
 
 ## Features
 
 - External npm package consumption
-- WebSocket runtime hosting
-- JSON-RPC protocol transport
-- Realtime runtime event streaming
-- Gemini AI provider integration
-- Dynamic runtime initialization
-- Runtime bootstrap API
-- Event-driven orchestration
+- HTTP JSON-RPC hosting
+- WebSocket JSON-RPC hosting
+- Multi-transport runtime
+- Runtime lifecycle management
+- Runtime initialization
+- Runtime startup
+- Runtime event streaming
+- Pluggable provider registration
+- Pluggable agent registration
+- Realtime observability foundation
 
 ---
 
@@ -31,8 +34,7 @@ Create a `.env` file:
 
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key
-OPENAI_API_KEY=your openai key
-
+OPENAI_API_KEY=your_openai_api_key
 ```
 
 ---
@@ -43,9 +45,13 @@ OPENAI_API_KEY=your openai key
 node main.mjs
 ```
 
-Runtime will start on:
+The runtime starts on:
 
 ```text
+HTTP JSON-RPC
+http://localhost:3000/rpc
+
+WebSocket JSON-RPC
 ws://localhost:3001
 ```
 
@@ -53,65 +59,114 @@ ws://localhost:3001
 
 ## Example Runtime Host
 
-```js
+```ts
 import 'dotenv/config';
 
 import {
-  bootstrapHttpRuntime,
+  bootstrapRuntime,
+  createRuntime,
   RuntimeInitializeApp,
   GeminiProvider,
+  OpenAIProvider,
+  MockProvider,
 } from '@stateflowx/runtime';
 
-await bootstrapHttpRuntime({
-  apps: [
-    new RuntimeInitializeApp(),
-  ],
+const runtime = createRuntime({
 
   providers: [
     {
       name: 'gemini',
-
-      provider:
-        new GeminiProvider(),
+      provider: new GeminiProvider(),
+    },
+    {
+      name: 'openai',
+      provider: new OpenAIProvider(),
+    },
+    {
+      name: 'mock',
+      provider: new MockProvider(),
     },
   ],
 
   services: [],
+
+  execution: {
+    enabled: true,
+
+    events: {
+      enabled: true,
+    },
+  },
 });
+
+bootstrapRuntime(
+  [new RuntimeInitializeApp()],
+  runtime
+);
+
+await runtime.initialize();
+
+await runtime.start();
 ```
 
 ---
 
-## Related Projects
+## Runtime Lifecycle
 
-- StateFlowX Client Demo
-- StateFlowX Runtime
-- StateFlowX Client
+```text
+Create Runtime
+        │
+Register Event Dispatchers
+        │
+Bootstrap Applications
+        │
+Initialize Runtime
+        │
+Start Runtime
+        │
+Accept Client Connections
+```
 
 ---
 
 ## Architecture
 
 ```text
-Client
-  ->
-WebSocket
-  ->
-JSON-RPC
-  ->
-StateFlowX Runtime
-  ->
-Providers
-  ->
-Runtime Events
-  ->
-Artifact Generation
+          Client
+             │
+             ▼
+      HTTP / WebSocket
+             │
+             ▼
+        JSON-RPC Protocol
+             │
+             ▼
+      StateFlowX Runtime
+             │
+    ┌────────┴────────┐
+    │                 │
+ Providers         Services
+    │                 │
+    └────────┬────────┘
+             │
+      Runtime Events
+             │
+             ▼
+      WebSocket Stream
 ```
+
+---
+
+## Related Projects
+
+- StateFlowX Runtime
+- StateFlowX Client
+- StateFlowX Client Demo
 
 ---
 
 ## Status
 
-Experimental / Active Development
+StateFlowX Runtime is experimental and under active development.
 
-This project is currently evolving rapidly as the runtime architecture and orchestration model are refined.
+The runtime provides a configurable execution engine capable of hosting AI providers, services, transports, protocols, and realtime runtime events. Client applications dynamically register workflows during runtime initialization.
