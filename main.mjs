@@ -6,11 +6,19 @@ import {
   GeminiProvider,
   OpenAIProvider,
   MockProvider,
+  GoogleAdkProvider,
+  GoogleADKAgent,
   WebSocketTransport,
   WebSocketEventDispatcher,
 } from '@stateflowx/runtime';
 
 import { WebSocketServer } from 'ws';
+
+//
+// Google ADK agent
+//
+const googleAdkAgent =
+  new GoogleADKAgent('weather-agent');
 
 //
 // HTTP runtime
@@ -19,20 +27,33 @@ const {
   runtime,
 } = await bootstrapHttpRuntime({
 
+  agents: [
+    {
+      name: 'weather-agent',
+      agent: googleAdkAgent,
+    },
+  ],
+
   providers: [
-  {
-    name: 'openai',
-    provider: new OpenAIProvider(),
-  },
-  {
-    name: 'gemini',
-    provider: new GeminiProvider(),
-  },
-  {
-    name: 'mock',
-    provider: new MockProvider(),
-  },
-],
+    {
+      name: 'openai',
+      provider: new OpenAIProvider(),
+    },
+    {
+      name: 'gemini',
+      provider: new GeminiProvider(),
+    },
+    {
+      name: 'mock',
+      provider: new MockProvider(),
+    },
+    {
+      name: 'google-adk',
+      provider: new GoogleAdkProvider(
+        googleAdkAgent
+      ),
+    },
+  ],
 
   services: [],
 
