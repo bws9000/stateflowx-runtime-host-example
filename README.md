@@ -15,7 +15,10 @@ This project demonstrates how to host the StateFlowX Runtime outside of the main
 - Runtime startup
 - Runtime event streaming
 - Pluggable provider registration
-- Pluggable agent registration *(coming back soon)*
+- Pluggable agent registration
+- Gemini provider support
+- OpenAI provider support
+- Google ADK provider and agent support
 - Realtime observability foundation
 
 ---
@@ -68,13 +71,25 @@ import {
   GeminiProvider,
   OpenAIProvider,
   MockProvider,
+  GoogleAdkProvider,
+  GoogleADKAgent,
   WebSocketTransport,
   WebSocketEventDispatcher,
 } from '@stateflowx/runtime';
 
 import { WebSocketServer } from 'ws';
 
+const googleAdkAgent =
+  new GoogleADKAgent('weather-agent');
+
 const { runtime } = await bootstrapHttpRuntime({
+
+  agents: [
+    {
+      name: 'weather-agent',
+      agent: googleAdkAgent,
+    },
+  ],
 
   providers: [
     {
@@ -88,6 +103,12 @@ const { runtime } = await bootstrapHttpRuntime({
     {
       name: 'mock',
       provider: new MockProvider(),
+    },
+    {
+      name: 'google-adk',
+      provider: new GoogleAdkProvider(
+        googleAdkAgent
+      ),
     },
   ],
 
@@ -143,6 +164,8 @@ runtime.addEventDispatcher(
 ```text
 Create Runtime
         │
+Register Providers and Agents
+        │
 Register Event Dispatchers
         │
 Bootstrap Applications
@@ -159,27 +182,27 @@ Accept Client Connections
 ## Architecture
 
 ```text
-          Client
-             │
-             ▼
-      HTTP / WebSocket
-             │
-             ▼
-        JSON-RPC Protocol
-             │
-             ▼
-      StateFlowX Runtime
-             │
-    ┌────────┴────────┐
-    │                 │
- Providers         Services
-    │                 │
-    └────────┬────────┘
-             │
-      Runtime Events
-             │
-             ▼
-      WebSocket Stream
+                Client
+                   │
+                   ▼
+            HTTP / WebSocket
+                   │
+                   ▼
+           JSON-RPC Protocol
+                   │
+                   ▼
+            StateFlowX Runtime
+                   │
+       ┌───────────┼───────────┐
+       │           │           │
+   Providers     Agents     Services
+       │           │           │
+       └───────────┼───────────┘
+                   │
+            Runtime Events
+                   │
+                   ▼
+            WebSocket Stream
 ```
 
 ---
@@ -196,4 +219,6 @@ Accept Client Connections
 
 StateFlowX Runtime is experimental and under active development.
 
-The runtime provides a configurable execution engine capable of hosting AI providers, services, transports, protocols, and realtime runtime events. Client applications dynamically register workflows during runtime initialization.
+The runtime provides a configurable execution environment capable of hosting AI providers, agents, services, transports, protocols, and realtime runtime events.
+
+Client applications can dynamically register workflows during runtime initialization while the runtime host remains independent of the client application.
