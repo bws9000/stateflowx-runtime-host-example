@@ -5,6 +5,7 @@ import {
   RuntimeInitializeApp,
   GeminiProvider,
   OpenAIProvider,
+  MockProvider,
   WebSocketTransport,
   WebSocketEventDispatcher,
 } from '@stateflowx/runtime';
@@ -19,17 +20,19 @@ const {
 } = await bootstrapHttpRuntime({
 
   providers: [
-    {
-      name: 'openai',
-      provider: new OpenAIProvider()
-
-    },
-    {
-      name: 'gemini',
-
-      provider: new GeminiProvider(),
-    },
-  ],
+  {
+    name: 'openai',
+    provider: new OpenAIProvider(),
+  },
+  {
+    name: 'gemini',
+    provider: new GeminiProvider(),
+  },
+  {
+    name: 'mock',
+    provider: new MockProvider(),
+  },
+],
 
   services: [],
 

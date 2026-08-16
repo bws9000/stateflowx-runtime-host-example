@@ -15,7 +15,7 @@ This project demonstrates how to host the StateFlowX Runtime outside of the main
 - Runtime startup
 - Runtime event streaming
 - Pluggable provider registration
-- Pluggable agent registration
+- Pluggable agent registration *(coming back soon)*
 - Realtime observability foundation
 
 ---
@@ -63,24 +63,27 @@ ws://localhost:3001
 import 'dotenv/config';
 
 import {
-  bootstrapRuntime,
-  createRuntime,
+  bootstrapHttpRuntime,
   RuntimeInitializeApp,
   GeminiProvider,
   OpenAIProvider,
   MockProvider,
+  WebSocketTransport,
+  WebSocketEventDispatcher,
 } from '@stateflowx/runtime';
 
-const runtime = createRuntime({
+import { WebSocketServer } from 'ws';
+
+const { runtime } = await bootstrapHttpRuntime({
 
   providers: [
     {
-      name: 'gemini',
-      provider: new GeminiProvider(),
-    },
-    {
       name: 'openai',
       provider: new OpenAIProvider(),
+    },
+    {
+      name: 'gemini',
+      provider: new GeminiProvider(),
     },
     {
       name: 'mock',
@@ -96,17 +99,41 @@ const runtime = createRuntime({
     events: {
       enabled: true,
     },
+
+    artifacts: {
+      enabled: false,
+    },
   },
+
+  apps: [
+    new RuntimeInitializeApp(),
+  ],
 });
 
-bootstrapRuntime(
-  [new RuntimeInitializeApp()],
-  runtime
+const server = new WebSocketServer({
+  port: 3001,
+});
+
+const websocket =
+  new WebSocketTransport(server);
+
+runtime.transports.push(websocket);
+
+websocket.onMessage(async (clientId, payload) => {
+
+  const response =
+    await runtime.protocol.receive(payload);
+
+  if (response !== undefined) {
+    await websocket.send(clientId, response);
+  }
+
+  return response;
+});
+
+runtime.addEventDispatcher(
+  new WebSocketEventDispatcher(server)
 );
-
-await runtime.initialize();
-
-await runtime.start();
 ```
 
 ---
