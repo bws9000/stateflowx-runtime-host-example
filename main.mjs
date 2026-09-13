@@ -7,7 +7,6 @@ import {
   OpenAIProvider,
   MockProvider,
   GoogleAdkProvider,
-  GoogleADKAgent,
   WebSocketTransport,
   WebSocketEventDispatcher,
   StoreFactory,
@@ -78,14 +77,6 @@ if (storeType === 'mysql') {
 }
 
 //
-// Google ADK agent
-//
-const googleAdkAgent =
-  new GoogleADKAgent(
-    'weather-agent'
-  );
-
-//
 // HTTP runtime
 //
 const {
@@ -94,14 +85,6 @@ const {
   port: 3000,
 
   store,
-
-  agents: [
-    {
-      name: 'weather-agent',
-
-      agent: googleAdkAgent,
-    },
-  ],
 
   providers: [
     {
@@ -126,9 +109,7 @@ const {
       name: 'google-adk',
 
       provider:
-        new GoogleAdkProvider(
-          googleAdkAgent
-        ),
+        new GoogleAdkProvider(),
     },
   ],
 

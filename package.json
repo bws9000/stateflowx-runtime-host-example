@@ -12,7 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@stateflowx/common": "^1.0.11",
-    "@stateflowx/runtime": "^0.6.1",
+    "@stateflowx/runtime": "^0.7.0",
     "ws": "^8.20.1"
   }
 }
